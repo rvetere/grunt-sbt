@@ -138,13 +138,14 @@ object GruntSbtPlugin extends Plugin {
    */
   lazy val npmInstallTask: Def.Initialize[Task[Int]] = Def.task {
     // Don't execute if no package.json is found in directory
+    val cwd = file(gruntDir.value)
     val pkgFileExists = (cwd / "package.json").exists
 
     if (pkgFileExists) exec(
       gruntNodePath.value,
       gruntNpmPath.value,
       args = Seq("install"),
-      cwd = file(gruntDir.value),
+      cwd = cwd,
       s = Some(streams.value))
     else 0
   }
