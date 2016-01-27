@@ -35,6 +35,9 @@ object GruntSbtPlugin extends Plugin {
     val gruntNpmPath = settingKey[String]("The path to the npm executable. " +
       "By default, the plugin will look for `npm` in the $PATH.")
 
+    val gruntDir = settingKey[String]("Optional sub-directory where Gruntfile.js and package.json are located. " +
+      "By default, the plugin will look in project root for those files.")
+
     val gruntTasks = settingKey[Seq[String]]("Sequence of grunt tasks to " +
       "execute as part of the `grunt` task for a particular configuration.  " +
       "For instance, for `Compile`, this could be `jshint` and `build`")
@@ -78,7 +81,8 @@ object GruntSbtPlugin extends Plugin {
   val baseGruntSettings: Seq[Setting[_]] = Seq(
     gruntPath := "grunt",
     gruntNpmPath := "npm",
-    gruntNodePath := ""
+    gruntNodePath := "",
+    gruntDir := ""
   )
 
   /**
@@ -118,7 +122,7 @@ object GruntSbtPlugin extends Plugin {
       gruntNodePath.value,
       gruntPath.value,
       args = Seq(force) ++ gruntTasks.value,
-      cwd = thisProject.value.base,
+      cwd = thisProject.value.base / gruntDir.value,
       s = Some(streams.value))
 
     val gruntOutputDir: Option[File] = gruntResourcesDirectory.value
@@ -134,7 +138,7 @@ object GruntSbtPlugin extends Plugin {
    */
   lazy val npmInstallTask: Def.Initialize[Task[Int]] = Def.task {
     // Don't execute if no package.json is found in directory
-    val cwd = thisProject.value.base
+    val cwd = thisProject.value.base / gruntDir.value
     val pkgFileExists = (cwd / "package.json").exists
 
     if (pkgFileExists) exec(
@@ -154,8 +158,9 @@ object GruntSbtPlugin extends Plugin {
     val extracted = Project.extract(state)
     val nodePath = extracted.getOpt(gruntNodePath).get
     val cmd = extracted.getOpt(gruntPath).get
+    val cwd = thisProject.value.base / gruntDir.value
 
-    exec(nodePath, cmd, Seq(task))
+    exec(nodePath, cmd, Seq(task), cwd)
 
     state
   }
