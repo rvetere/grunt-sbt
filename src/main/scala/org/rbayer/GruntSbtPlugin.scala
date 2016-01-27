@@ -158,7 +158,12 @@ object GruntSbtPlugin extends Plugin {
     val extracted = Project.extract(state)
     val nodePath = extracted.getOpt(gruntNodePath).get
     val cmd = extracted.getOpt(gruntPath).get
-    val cwd = gruntDir.value != "" ? file(gruntDir.value) : thisProject.value.base
+    val cwd = thisProject.value.base
+
+    if (gruntDir.value != "") {
+      cwd = file(gruntDir.value)
+    }
+
 
     exec(nodePath, cmd, Seq(task), cwd)
 
