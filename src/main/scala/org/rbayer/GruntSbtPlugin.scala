@@ -82,7 +82,7 @@ object GruntSbtPlugin extends Plugin {
     gruntPath := "grunt",
     gruntNpmPath := "npm",
     gruntNodePath := "",
-    gruntFile := "."
+    gruntFile := "Gruntfile.js"
   )
 
   /**
@@ -120,7 +120,7 @@ object GruntSbtPlugin extends Plugin {
 
     exec(
       gruntNodePath.value,
-      gruntPath.value,
+      gruntPath.value + " --gruntfile " + gruntFile.value,
       args = Seq(force) ++ gruntTasks.value,
       cwd = thisProject.value.base,
       s = Some(streams.value))
