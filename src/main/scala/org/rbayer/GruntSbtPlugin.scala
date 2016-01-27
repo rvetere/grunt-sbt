@@ -35,8 +35,8 @@ object GruntSbtPlugin extends Plugin {
     val gruntNpmPath = settingKey[String]("The path to the npm executable. " +
       "By default, the plugin will look for `npm` in the $PATH.")
 
-    val gruntDir = settingKey[String]("Optional sub-directory where Gruntfile.js and package.json are located. " +
-      "By default, the plugin will look in project root for those files.")
+    val gruntFile = settingKey[String]("Specify the gruntfile.js (optional). " +
+      "By default, the plugin will look in project root for this file.")
 
     val gruntTasks = settingKey[Seq[String]]("Sequence of grunt tasks to " +
       "execute as part of the `grunt` task for a particular configuration.  " +
@@ -82,7 +82,7 @@ object GruntSbtPlugin extends Plugin {
     gruntPath := "grunt",
     gruntNpmPath := "npm",
     gruntNodePath := "",
-    gruntDir := "."
+    gruntFile := "."
   )
 
   /**
@@ -157,10 +157,13 @@ object GruntSbtPlugin extends Plugin {
   lazy val gruntCmd = Command.single("grunt") { (state, task) =>
     val extracted = Project.extract(state)
     val nodePath = extracted.getOpt(gruntNodePath).get
-    val cmd = extracted.getOpt(gruntPath).get
-    val cwd = file(extracted.getOpt(gruntDir).get)
 
-    exec(nodePath, cmd, Seq(task), cwd)
+    var cmd = extracted.getOpt(gruntPath).get
+    if (extracted.getOpt(gruntFile).get != "") {
+      cmd = extracted.getOpt(gruntFile).get + " --gruntfile " + extracted.getOpt(gruntFile).get
+    }
+
+    exec(nodePath, cmd, Seq(task))
 
     state
   }
